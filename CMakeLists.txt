@@ -675,6 +675,10 @@ if(EVENT__HAVE_EPOLL)
     list(APPEND SRC_CORE epoll_sub.c epoll.c)
 endif()
 
+if(EVENT__HAVE_MIO)
+    list(APPEND SRC_CORE mio.c)
+endif()
+
 if(EVENT__HAVE_EVENT_PORTS)
     list(APPEND SRC_CORE evport.c)
 endif()
