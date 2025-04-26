@@ -89,6 +89,10 @@ const struct eventop pollops = {
 	poll_add,
 	poll_del,
 	poll_dispatch,
+	NULL, //poll_dispatch_pre,
+	NULL, //poll_dispatch_wait,
+	NULL, //poll_dispatch_post,
+	NULL, // poll_fd
 	poll_dealloc,
 	1, /* need_reinit */
 	EV_FEATURE_FDS|EARLY_CLOSE_IF_HAVE_RDHUP,

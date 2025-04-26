@@ -109,6 +109,10 @@ struct eventop {
 	    return 0 on success and -1 on error.
 	 */
 	int (*dispatch)(struct event_base *, struct timeval *);
+	long (*dispatch_pre)(struct event_base *, struct timeval *);
+	int (*dispatch_wait)(struct event_base *, long timeout);
+	int (*dispatch_post)(struct event_base *, int wait_res);
+	int (*event_fd)(struct event_base *);
 	/** Function to clean up and free our data from the event_base. */
 	void (*dealloc)(struct event_base *);
 	/** Flag: set if we need to reinitialize the event base after we fork.

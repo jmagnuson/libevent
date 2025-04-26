@@ -100,6 +100,10 @@ static const struct eventop evsigops = {
 	evsig_del,
 	NULL,
 	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
 	0, 0, 0
 };
 

@@ -824,7 +824,19 @@ int event_base_set(struct event_base *, struct event *);
   */
 EVENT2_EXPORT_SYMBOL
 int event_base_loop(struct event_base *, int);
+    
+EVENT2_EXPORT_SYMBOL
+int event_base_loop_pre(struct event_base *, int, int *);
 
+EVENT2_EXPORT_SYMBOL
+int event_base_loop_turn_pre(struct event_base *, int, int *, struct timeval *, struct timeval **);
+    
+EVENT2_EXPORT_SYMBOL
+int event_base_loop_turn_wait(struct event_base *, struct timeval *);
+    
+EVENT2_EXPORT_SYMBOL
+int event_base_loop_turn_post(struct event_base *, int, int, int *, int *);
+    
 /**
   Exit the event loop after the specified time
 

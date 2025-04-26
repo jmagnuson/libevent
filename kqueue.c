@@ -99,6 +99,10 @@ const struct eventop kqops = {
 	event_changelist_add_,
 	event_changelist_del_,
 	kq_dispatch,
+	kq_dispatch_pre,
+	kq_dispatch_wait,
+	kq_dispatch_post,
+	NULL, // kq_fd
 	kq_dealloc,
 	1 /* need reinit */,
     EV_FEATURE_ET|EV_FEATURE_O1|EV_FEATURE_FDS,
@@ -111,6 +115,10 @@ static const struct eventop kqsigops = {
 	kq_sig_add,
 	kq_sig_del,
 	NULL,
+	NULL, // kq_dispatch_pre,
+	NULL, // kq_dispatch_wait,
+	NULL, // kq_dispatch_post,
+	NULL, // kq_fd
 	NULL,
 	1 /* need reinit */,
 	0,

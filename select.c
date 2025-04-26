@@ -97,6 +97,10 @@ const struct eventop selectops = {
 	select_add,
 	select_del,
 	select_dispatch,
+	NULL, // select_dispatch_pre,
+	NULL, // select_dispatch_wait,
+	NULL, // select_dispatch_post,
+	NULL,
 	select_dealloc,
 	1, /* need_reinit. */
 	EV_FEATURE_FDS,

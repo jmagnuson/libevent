@@ -94,6 +94,10 @@ struct epollop {
 
 static void *epoll_init(struct event_base *);
 static int epoll_dispatch(struct event_base *, struct timeval *);
+static long epoll_dispatch_pre(struct event_base *, struct timeval *);
+static int epoll_dispatch_wait(struct event_base *, long timeout);
+static int epoll_dispatch_post(struct event_base *, int wait_res);
+static int epoll_fd(struct event_base *base);
 static void epoll_dealloc(struct event_base *);
 
 static const struct eventop epollops_changelist = {
@@ -102,6 +106,10 @@ static const struct eventop epollops_changelist = {
 	event_changelist_add_,
 	event_changelist_del_,
 	epoll_dispatch,
+	epoll_dispatch_pre,
+	epoll_dispatch_wait,
+	epoll_dispatch_post,
+	epoll_fd,
 	epoll_dealloc,
 	1, /* need reinit */
 	EV_FEATURE_ET|EV_FEATURE_O1| EARLY_CLOSE_IF_HAVE_RDHUP,
@@ -120,6 +128,10 @@ const struct eventop epollops = {
 	epoll_nochangelist_add,
 	epoll_nochangelist_del,
 	epoll_dispatch,
+	epoll_dispatch_pre,
+	epoll_dispatch_wait,
+	epoll_dispatch_post,
+	epoll_fd,
 	epoll_dealloc,
 	1, /* need reinit */
 	EV_FEATURE_ET|EV_FEATURE_O1|EV_FEATURE_EARLY_CLOSE,
@@ -413,12 +425,9 @@ epoll_nochangelist_del(struct event_base *base, evutil_socket_t fd,
 	return epoll_apply_one_change(base, base->evbase, &ch);
 }
 
-static int
-epoll_dispatch(struct event_base *base, struct timeval *tv)
-{
+static long
+epoll_dispatch_pre(struct event_base *base, struct timeval *tv) {
 	struct epollop *epollop = base->evbase;
-	struct epoll_event *events = epollop->events;
-	int i, res;
 	long timeout = -1;
 
 #ifdef USING_TIMERFD
@@ -462,7 +471,32 @@ epoll_dispatch(struct event_base *base, struct timeval *tv)
 
 	EVBASE_RELEASE_LOCK(base, th_base_lock);
 
-	res = epoll_wait(epollop->epfd, events, epollop->nevents, timeout);
+	return timeout;
+}
+
+static int
+epoll_dispatch_wait(struct event_base *base, long timeout) {
+	struct epollop *epollop = base->evbase;
+	struct epoll_event *events = epollop->events;
+
+	int res = epoll_wait(epollop->epfd, events, epollop->nevents, timeout);
+
+	return res;
+}
+
+static int
+epoll_dispatch(struct event_base *base, struct timeval *tv) {
+	long timeout = epoll_dispatch_pre(base, tv);
+	int wait_res = epoll_dispatch_wait(base, timeout);
+	int res = epoll_dispatch_post(base, wait_res);
+	return res;
+}
+
+static int
+epoll_dispatch_post(struct event_base *base, int res) {
+	struct epollop *epollop = base->evbase;
+	struct epoll_event *events = epollop->events;
+	int i;
 
 	EVBASE_ACQUIRE_LOCK(base, th_base_lock);
 
@@ -520,6 +554,12 @@ epoll_dispatch(struct event_base *base, struct timeval *tv)
 	}
 
 	return (0);
+}
+
+static int
+epoll_fd(struct event_base *base) {
+	struct epollop *epollop = base->evbase;
+	return epollop->epfd;
 }
 
 
